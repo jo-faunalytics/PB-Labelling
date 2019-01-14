@@ -95,6 +95,7 @@ ldtab8
 
 ldtab8$label <- factor(ldtab8$label, labels = c("Feel-Good", "Vegan", "Clean", "Kojo", "Dir. Protein", "Planet Fr.", "Zero Chol.",
                                                 "Plant-Based"))
+ldtab8$eth.race2 <- factor(ldtab8$eth.race2, labels = c("White", "Black/African-American", "Hispanic", "Other/Multi-Racial"))
 ldtab8
 
 plot8 <- ggplot(data = ldtab8, aes(x = eth.race2, y = avg, fill = label)) + 

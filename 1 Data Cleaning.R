@@ -13,6 +13,8 @@ names(data) #show all column names, note ones to remove
 data <- data[, -c(3:5, 7:8, 10:20, 22, 149, 150, 152, 178, 179, 181)] #remove unnecessary columns
 names(data) #check
 
+describe(data$Exclude)
+
 #EXCLUSIONS
 data <- filter(data, is.na(Exclude)) #keeps only those without an Exclude flag (from panel company going over quota)
 

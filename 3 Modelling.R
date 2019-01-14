@@ -7,8 +7,9 @@ library("ggplot2")
 library("tidyverse")
 library("ggthemes")
 library("stargazer")
-library("lme4")
 library("lmSupport")
+library("gridExtra")
+library("cowplot")
 
 #Load data
 load('PB Labelling Data - long cleaned.Rdata')
@@ -45,15 +46,8 @@ describe(ldata$eth.race2alt) #check
 ldata$eth.race.e2 <- C(ldata$eth.race2alt, sum) #effect codes for reordered variable
 attributes(ldata$eth.race.e2)
 
-ldata$gend.e <- C(ldata$gender1, sum) #creates effect codes for gender
-attributes(ldata$gend.e)
-
 ldata$label.e <- C(ldata$label, sum) #creates effect codes for label
 attributes(ldata$label.e)
-
-ldata$alt.cons.e <- C(ldata$alt.cons, sum) #creates effect codes for alt.cons
-attributes(ldata$alt.cons.e)
-
 
 
 #############OVERALL MODEL###############
@@ -128,6 +122,7 @@ stargazer(overall.model1, overall.model6, type = "text",
 
 
 ##########INDIVIDUAL LABELS##############
+###MODELS (PLOTS BELOW)
 
 #H2a: VEGAN
 #Pre-registered questions:
@@ -143,16 +138,6 @@ compare.models <- modelCompare(model.h2a.noeth, model.h2a)
 model.h2a.rec <- lm(label.score ~ gender1*zage + eth.race.e2 + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "vegan"))
 stargazer(model.h2a.rec, type = "text")
 
-line2a <- ggplot(filter(ldata, label == "vegan" & gender1 != "Other"), aes(x = age, y = label.score)) + 
-  geom_point(aes(color = gender1), size = .3) + 
-  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
-  labs (x = "Age", y = "Overall Vegan Rating", colour="Gender") + 
-  ggtitle("Vegan Ratings by Age and Gender")
-line2a
-
-png('Scatter - Vegan Ratings by Age and Gender.png', width = 640)
-line2a
-dev.off()
 
 #H2b: PLANT-BASED
 #Pre-registered questions:
@@ -165,16 +150,6 @@ stargazer(model.h2b, type = "text")
 model.h2b.noeth <- lm(label.score ~ gender1*zage + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "pb"))
 compare.models <- modelCompare(model.h2b.noeth, model.h2b)
 
-line2b <- ggplot(filter(ldata, label == "pb" & gender1 != "Other"), aes(x = age, y = label.score)) + 
-  geom_point(aes(color = gender1), size = .3) + 
-  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
-  labs (x = "Age", y = "Overall Plant-Based Rating", colour="Gender") + 
-  ggtitle("Plant-Based Ratings by Age and Gender")
-line2b
-
-png('Scatter - Plant-Based Ratings by Age and Gender.png', width = 640)
-line2b
-dev.off()
 
 #H2c: DIRECT PROTEIN
 #Pre-registered questions:
@@ -186,17 +161,6 @@ stargazer(model.h2c, type = "text")
 #Testing main effect of ethnicity
 model.h2c.noeth <- lm(label.score ~ gender1*zage + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "dp"))
 compare.models <- modelCompare(model.h2c.noeth, model.h2c)
-
-line2c <- ggplot(filter(ldata, label == "dp" & gender1 != "Other"), aes(x = age, y = label.score)) + 
-  geom_point(aes(color = gender1), size = .3) + 
-  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
-  labs (x = "Age", y = "Overall Direct Protein Rating", colour="Gender") + 
-  ggtitle("Direct Protein Ratings by Age and Gender")
-line2c
-
-png('Scatter - Direct Protein Ratings by Age and Gender.png', width = 640)
-line2c
-dev.off()
 
 stargazer(model.h2a, model.h2b, model.h2c, type = "text", column.labels = c("Vegan", "PB", "DP"))
 
@@ -212,16 +176,6 @@ compare.models <- modelCompare(model.fg.noeth, model.fg)
 model.fg.rec <- lm(label.score ~ gender1*zage + eth.race.e2 + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "fg"))
 stargazer(model.fg.rec, type = "text")
 
-line.fg <- ggplot(filter(ldata, label == "fg" & gender1 != "Other"), aes(x = age, y = label.score)) + 
-  geom_point(aes(color = gender1), size = .3) + 
-  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
-  labs (x = "Age", y = "Overall Feel-Good Rating", colour="Gender") + 
-  ggtitle("Feel-Good Ratings by Age and Gender")
-line.fg
-
-png('Scatter - Feel-Good Ratings by Age and Gender.png', width = 640)
-line.fg
-dev.off()
 
 #KOJO
 model.kojo <- lm(label.score ~ gender1*zage + eth.race.e + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "kojo"))
@@ -231,16 +185,6 @@ stargazer(model.kojo, type = "text")
 model.kojo.noeth <- lm(label.score ~ gender1*zage + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "kojo"))
 compare.models <- modelCompare(model.kojo.noeth, model.kojo)
 
-line.kojo <- ggplot(filter(ldata, label == "kojo" & gender1 != "Other"), aes(x = age, y = label.score)) + 
-  geom_point(aes(color = gender1), size = .3) + 
-  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
-  labs (x = "Age", y = "Overall Kojo Rating", colour="Gender") + 
-  ggtitle("Kojo Ratings by Age and Gender")
-line.kojo
-
-png('Scatter - Kojo Ratings by Age and Gender.png', width = 640)
-line.kojo
-dev.off()
 
 #CLEAN
 model.clean <- lm(label.score ~ gender1*zage + eth.race.e + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "clean"))
@@ -250,16 +194,6 @@ stargazer(model.clean, type = "text")
 model.clean.noeth <- lm(label.score ~ gender1*zage + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "clean"))
 compare.models <- modelCompare(model.clean.noeth, model.clean)
 
-line.clean <- ggplot(filter(ldata, label == "clean" & gender1 != "Other"), aes(x = age, y = label.score)) + 
-  geom_point(aes(color = gender1), size = .3) + 
-  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
-  labs (x = "Age", y = "Overall Clean Rating", colour="Gender") + 
-  ggtitle("Clean Ratings by Age and Gender")
-line.clean
-
-png('Scatter - Clean Ratings by Age and Gender.png', width = 640)
-line.clean
-dev.off()
 
 #PLANET-FRIENDLY
 model.pf <- lm(label.score ~ gender1*zage + eth.race.e + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "pf"))
@@ -269,16 +203,6 @@ stargazer(model.pf, type = "text")
 model.pf.noeth <- lm(label.score ~ gender1*zage + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "pf"))
 compare.models <- modelCompare(model.pf.noeth, model.pf)
 
-line.pf <- ggplot(filter(ldata, label == "pf" & gender1 != "Other"), aes(x = age, y = label.score)) + 
-  geom_point(aes(color = gender1), size = .3) + 
-  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
-  labs (x = "Age", y = "Overall Planet-Friendly Rating", colour="Gender") + 
-  ggtitle("Planet-Friendly Ratings by Age and Gender")
-line.pf
-
-png('Scatter - Planet-Friendly Ratings by Age and Gender.png', width = 640)
-line.pf
-dev.off()
 
 #ZERO-CHOLESTEROL
 model.zc <- lm(label.score ~ gender1*zage + eth.race.e + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "zc"))
@@ -291,30 +215,27 @@ compare.models <- modelCompare(model.zc.noeth, model.zc)
 model.zc.rec <- lm(label.score ~ gender1*zage + eth.race.e2 + reg.e + as.numeric(income) + alt.cons, filter(ldata, label == "zc"))
 stargazer(model.zc.rec, type = "text")
 
-line.zc <- ggplot(filter(ldata, label == "zc" & gender1 != "Other"), aes(x = age, y = label.score)) + 
-  geom_point(aes(color = gender1), size = .3) + 
-  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
-  labs (x = "Age", y = "Overall Zero Cholesterol Rating", colour="Gender") + 
-  ggtitle("Zero Cholesterol Ratings by Age and Gender")
-line.zc
-
-png('Scatter - Zero Cholesterol Ratings by Age and Gender.png', width = 640)
-line.zc
-dev.off()
 
 glimpse(ldata)
 
 stargazer(model.fg, model.h2a, model.clean, model.kojo, model.h2c, model.pf, model.zc, model.h2b, 
           type = "text", column.labels = c("FG", "Vegan", "Clean", "Kojo", "DP", "PF", "ZC", "PB"))
 
+
 ####################################
 #QUESTION 5
 
-#effect-coded label variable
-ldata$label.e<- C(ldata$label, sum)
-attributes(ldata$label.e)
+taste.model1 <- lm(label.score ~ zhealth + zanimals + zenv, ldata)
+taste.model2 <- lm(label.score ~ zhealth + zanimals + zenv + ztaste, ldata)
+compare.models <- modelCompare(taste.model1, taste.model2)
+stargazer(overall.model1, overall.model2, type = "text", 
+          add.lines = list(c("SSE (Compact) = ", round(compare.models$sseC, 2)),
+                           c("SSE (Augmented) = ", round(compare.models$sseA, 2)),
+                           c("Delta R-Squared = ", round(compare.models$DeltaR2, 3)),
+                           c("Partial Eta-Squared (PRE) = ", round(compare.models$PRE, 3)),
+                           c(paste0("F(", compare.models$nDF, ",", compare.models$dDF, ") = "), paste0(round(compare.models$Fstat, 2), ",")),
+                           c("p = ", compare.models$p)))
 
-ratings.lm <- lm(label.score ~ zhealth + zanimals + zenv + ztaste, ldata)
 ratings.lm2 <- lm(label.score ~ zhealth + zanimals + zenv + ztaste + gender1*zage + income + eth.race.e + reg.e + alt.cons, ldata)
 lm.deltaR2(ratings.lm, ratings.lm2)
 stargazer(ratings.lm, ratings.lm2, type = "text")
@@ -330,13 +251,107 @@ rat.vegan2 <- lm(label.score ~ zhealth + zanimals + zenv + ztaste + gender1*zage
 lm.deltaR2(rat.vegan1, rat.vegan2)
 stargazer(rat.vegan1, rat.vegan2, type = "text")
 
-##########PREDICTING TASTE##############
+###PREDICTING TASTE
 
 #Is perceived tastiness influenced by demographics?
 taste.model <- lm(ztaste ~ label.e + gender1*zage + eth.race.e + reg.e + as.numeric(income) + alt.cons, ldata)
 stargazer(taste.model, type = "text")
 
 
-####OUTPUT FILE
+#######################PLOTS#########################
+
+line.fg <- ggplot(filter(ldata, label == "fg" & gender1 != "Other"), aes(x = age, y = label.score)) + 
+  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
+  geom_point(aes(color = gender1), size = .3) + 
+  labs (x = "", y = "Overall Rating", colour = "Gender") +
+  theme(text = element_text(size=20), legend.position = c(.8,1)) +
+  coord_cartesian(ylim = c(-6,6)) +
+  ggtitle("Feel-Good")
+line.fg
+
+line2a <- ggplot(filter(ldata, label == "vegan" & gender1 != "Other"), aes(x = age, y = label.score)) + 
+  geom_point(aes(color = gender1), size = .3) + 
+  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
+  labs (x = "", y = "Overall Rating") + 
+  guides(colour = FALSE) +
+  theme(text = element_text(size=20)) +
+  coord_cartesian(ylim = c(-6,6)) +
+  ggtitle("Vegan")
+line2a
+
+line2c <- ggplot(filter(ldata, label == "dp" & gender1 != "Other"), aes(x = age, y = label.score)) + 
+  geom_point(aes(color = gender1), size = .3) + 
+  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
+  labs (x = "", y = "Overall Rating") + 
+  guides(colour = FALSE) +
+  theme(text = element_text(size=20)) +
+  coord_cartesian(ylim = c(-6,6)) +
+  ggtitle("Direct Protein")
+line2c
+
+line2b <- ggplot(filter(ldata, label == "pb" & gender1 != "Other"), aes(x = age, y = label.score)) + 
+  geom_point(aes(color = gender1), size = .3) + 
+  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
+  labs (x = "Age", y = "Overall Rating") + 
+  guides(colour = FALSE) +
+  theme(text = element_text(size=20)) +
+  coord_cartesian(ylim = c(-6,6)) +
+  ggtitle("Plant-Based")
+line2b
+
+#
+
+line.kojo <- ggplot(filter(ldata, label == "kojo" & gender1 != "Other"), aes(x = age, y = label.score)) + 
+  geom_point(aes(color = gender1), size = .3) + 
+  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
+  labs (x = "", y = "Overall Rating", colour = "Gender") +
+  theme(text = element_text(size=20), legend.position = c(.8,1)) +
+  coord_cartesian(ylim = c(-6,6)) +
+  ggtitle("Kojo")
+line.kojo
+
+line.zc <- ggplot(filter(ldata, label == "zc" & gender1 != "Other"), aes(x = age, y = label.score)) + 
+  geom_point(aes(color = gender1), size = .3) + 
+  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
+  labs (x = "", y = "Overall Rating") + 
+  guides(colour = FALSE) +
+  theme(text = element_text(size=20)) +
+  coord_cartesian(ylim = c(-6,6)) +
+  ggtitle("Zero Cholesterol")
+line.zc
+
+line.clean <- ggplot(filter(ldata, label == "clean" & gender1 != "Other"), aes(x = age, y = label.score)) + 
+  geom_point(aes(color = gender1), size = .3) + 
+  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
+  labs (x = "", y = "Overall Rating") + 
+  guides(colour = FALSE) +
+  theme(text = element_text(size=20)) +
+  coord_cartesian(ylim = c(-6,6)) +
+  ggtitle("Clean")
+line.clean
+
+line.pf <- ggplot(filter(ldata, label == "pf" & gender1 != "Other"), aes(x = age, y = label.score)) + 
+  geom_point(aes(color = gender1), size = .3) + 
+  geom_smooth(aes(group = gender1, color = gender1), method = "lm") +
+  labs (x = "Age", y = "Overall Rating") + 
+  guides(colour = FALSE) +
+  theme(text = element_text(size=20)) +
+  coord_cartesian(ylim = c(-6,6)) +
+  ggtitle("Planet-Friendly")
+line.pf
+
+
+###All plots together
+
+#Output to PNG
+png('All Plots 1 - Age by Gender.png', width = 500, height = 1300)
+grid.arrange(line.fg, line2a, line2c, line2b, ncol = 1)
+dev.off()
+png('All Plots 2 - Age by Gender.png', width = 500, height = 1300)
+grid.arrange(line.kojo, line.zc, line.clean, line.pf, ncol = 1)
+dev.off()
+
+
+####OUTPUT DATA
 
 write.csv(ldata, file='PB Labelling Data - all variables.csv', row.names=FALSE)
